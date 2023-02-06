@@ -19,19 +19,15 @@ def show_user(username):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print("1")
     if request.method == 'POST':
-        print("2")
         username = request.form['username']
         password = request.form['password']
-        print("3")
         if username == 'test' and password == 'test':
             return 'Login successful'
         else:
             return 'Invalid username or password'
 
     return render_template('form.html')
-
 
 # @app.route('/')
 # def index():
@@ -46,5 +42,3 @@ def index():
 
 if __name__ == '__main__':
     app.run()
-
-    
