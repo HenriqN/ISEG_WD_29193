@@ -60,6 +60,5 @@ def form():
 app.config["SECRET_KEY"] = "abc"
 csrf = CSRFProtect(app)
 
-
 if __name__ == '__main__':
     app.run()
