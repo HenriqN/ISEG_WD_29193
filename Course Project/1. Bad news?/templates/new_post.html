@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create a New Post</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/
+  4.0.0/css/bootstrap.min.css" integrity=
+  "sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+  crossorigin="anonymous">
+  <style>
+    .container {
+      margin-top: 50px;
+      text-align: center;
+}
+h1 {
+      font-weight: bold;
+      font-size: 36px;
+      margin-bottom: 20px;
+}
+form {
+  margin-top: 40px;
+  text-align: left;
+  display: inline-block;
+  width: 60%;
+}
+label {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+input[type="text"], textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+input[type="submit"] {
+  padding: 10px 20px;
+  font-size: 18px;
+}
+   </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Create a New Post</h1>
+    <form action="{{ url_for('create_post') }}" method="post">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" required>
+      <label for="body">Body:
+      <textarea id="body" name="body" rows="10" required></textarea>
+      <input type="submit" value="Create Post">
+    </form>
+  </div>
+</body>
+</html>

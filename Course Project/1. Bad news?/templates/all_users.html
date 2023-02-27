@@ -1,0 +1,44 @@
+<html>
+<head>
+  <title>Sarcastic Social Network</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/
+  4.0.0/css/bootstrap.min.css" integrity=
+  "sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+  crossorigin="anonymous">
+  <style>
+    .container {
+      margin-top: 50px;
+      text-align: center;
+}
+h1 {
+      font-weight: bold;
+      font-size: 36px;
+      margin-bottom: 20px;
+} p{
+      font-size: 18px;
+      margin-bottom: 40px;
+    }
+    .btn-primary, .btn-secondary {
+      margin-right: 20px;
+      font-size: 18px;
+      padding: 10px 20px;
+} </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to the Sarcastic Social Network</h1>
+    <p>Join the community and share your sarcastic wit with the world.</p>
+    {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
+    {% else %}
+      <p>Hello {{ current_user.username }}!</p>
+      <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+    {% endif %}
+  </div>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ user.username }}'s Profile</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/
+  4.0.0/css/bootstrap.min.css" integrity=
+  "sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+  crossorigin="anonymous">
+  <style>
+    .container {
+      margin-top: 50px;
+      text-align: center;
+  }
+  h1 {
+      font-weight: bold;
+      font-size: 36px;
+      margin-bottom: 20px;
+  }
+  p {
+      font-size: 18px;
+      margin-bottom: 40px;
+  }
+    h2 {
+      font-weight: bold;
+      font-size: 24px;
+      margin-top: 40px;
+  }
+.post {
+      border: 1px solid gray;
+      padding: 20px;
+      margin-bottom: 20px;
+}
+.post h3 {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+} 
+    .post p {
+      font-size: 16px;
+      margin-bottom: 10px;
+} </style>
+</head>
+<body>
+  <div class="container">
+    <h1>{{ user.username }}'s Profile</h1>
+    {% if user == current_user %}
+      <a href="{{ url_for('edit_profile') }}" class="btn btn-secondary">Edit Profile</a>
+    {% endif %}
+    <h2>Posts</h2>
+    {% for post in posts %}
+      <div class="post">
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.body }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
+

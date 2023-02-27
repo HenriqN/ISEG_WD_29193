@@ -1,0 +1,42 @@
+1. Since then, the Met@ stocks went down again and your boss is thinking about replacing you with ChatGTP. So he asked it to do your work. However, this is what ChatGPT came up with... Based on what you have learned, can you fix this code?
+
+Please focus your attention on the fixed code in the folder titled '1. Bad news?'.
+
+
+2. Bonus 
+
+2.1. To help you with the project management you asked ChatGPT to help you with the generation of tasks. This is what he gave you... Can you spot if there is anything wrong?
+
+These steps seem reasonable for a Flask project, but they may not be sufficient for the specific requirements of your project. Here are some additional steps you could consider:
+
+• Plan and design: Before diving into coding, it's important to plan and design your application. This could include creating wireframes, user stories, and a detailed project plan that outlines the timeline, resources, and budget required.
+
+• Choose a hosting service: In addition to testing your application locally, you'll need to choose a hosting service to deploy your application. There are many options available, including Heroku, DigitalOcean, and AWS. Consider factors such as cost, scalability, and ease of deployment when choosing a hosting service.
+
+• Implement user authentication: User authentication is a critical component of any web application. Consider using Flask-Login or another authentication library to handle user registration, login, and password reset functionality.
+
+• Implement data validation and error handling: Your application should validate user input and handle errors gracefully. This can help prevent security vulnerabilities and improve the user experience.
+
+• Optimize for performance: As your application grows, you'll need to optimize it for performance. This could include using caching, optimizing database queries, and minimizing the size of static assets.
+
+• Conduct security testing: It's important to test your application for security vulnerabilities before deploying it to a production environment. Consider using a tool like OWASP ZAP to conduct automated security testing, and hire a security consultant to perform a manual penetration test.
+
+• Monitor and maintain: After deploying your application, you'll need to monitor it for errors and performance issues, and maintain it by applying security updates and bug fixes. Consider using a tool like Sentry to monitor errors and AWS CloudWatch to monitor performance.
+
+
+2.2. How would you prevent SQL injections in you application?
+
+SQL injection is a type of security vulnerability that occurs when an attacker is able to inject malicious SQL code into a database query. To prevent SQL injections in an application using Flask and SQLite, here are some best practices that can be followed:
+
+• Use parameterized queries: Instead of directly concatenating user inputs into SQL queries, use parameterized queries that separate the SQL code from user inputs. Flask’s sqlite3 module supports parameterized queries using the ? placeholder.
+
+• Sanitize user inputs: Before executing any database query, sanitize all user inputs by removing any special characters that could be used to inject SQL code. Flask’s escape() function can be used for this purpose.
+
+• Limit user privileges: Limit the privileges of the database user used by the application to only those necessary for the application to function. This will prevent attackers from using the application to execute unauthorized actions on the database.
+
+• Use Flask-SQLAlchemy ORM: Flask-SQLAlchemy provides an ORM (Object-Relational Mapping) layer that can be used to abstract away SQL queries and help prevent SQL injection attacks. SQLAlchemy provides its own mechanisms for parameterized queries, and Flask-SQLAlchemy provides convenient methods for querying the database using ORM.
+
+• Keep the database up-to-date: Ensure that the database software and any associated libraries are up-to-date with the latest security patches to prevent known vulnerabilities from being exploited.
+
+By following these best practices, developers can significantly reduce the risk of SQL injection attacks on their Flask and SQLite applications.
+

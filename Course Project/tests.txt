@@ -1,0 +1,403 @@
+# A unit test for the comment() function. Note: this test assumes that there is at least one post in the database with ID 1.
+
+import unittest
+from app import app, models
+
+class TestComment(unittest.TestCase):
+    def setUp(self):
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+        models.init_db()
+
+    def test_comment(self):
+        # Log in as a user
+        self.app.post('/login', data=dict(
+            username='testuser',
+            password='testpassword'
+        ), follow_redirects=True)
+
+        # Add a comment to a post
+        self.app.post('/comment', data=dict(
+            post_id=1,
+            content='Test comment'
+        ), follow_redirects=True)
+
+        # Check that the comment was added to the database
+        comments = models.get_comments()
+        self.assertEqual(len(comments), 1)
+        self.assertEqual(comments[0]['post_id'], 1)
+        self.assertEqual(comments[0]['user_id'], 1)
+        self.assertEqual(comments[0]['content'], 'Test comment')
+
+        # Check that the comment appears on the feed page
+        response = self.app.get('/feed')
+        self.assertIn(b'Test comment', response.data)
+
+
+# A unit test for the delete() function.
+
+import unittest
+from app import app, models, controllers
+
+class TestDelete(unittest.TestCase):
+
+    def setUp(self):
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+        models.init_db()
+        self.user = models.User('testuser', 'password')
+        models.add_user(self.user)
+
+    def tearDown(self):
+        models.delete_all_users()
+
+    def test_delete_user(self):
+        with self.app as c:
+            with c.session_transaction() as sess:
+                sess['logged_in'] = True
+                sess['username'] = 'testuser'
+            response = c.post('/delete/testuser')
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.location, 'http://localhost/')
+            self.assertIsNone(models.get_user('testuser', 'password'))
+
+    def test_delete_user_not_found(self):
+        with self.app as c:
+            with c.session_transaction() as sess:
+                sess['logged_in'] = True
+                sess['username'] = 'testuser'
+            response = c.post('/delete/nonexistentuser')
+            self.assertEqual(response.status_code, 404)
+            self.assertIn(b'User not found', response.data)
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+# A unit test for the feed() function.
+
+import unittest
+from app import app
+
+class FeedTestCase(unittest.TestCase):
+
+    def setUp(self):
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+
+    def tearDown(self):
+        pass
+
+    def test_feed_status_code(self):
+        response = self.app.get('/feed')
+        self.assertEqual(response.status_code, 200)
+
+    def test_feed_content(self):
+        response = self.app.get('/feed')
+        self.assertIn(b'Feed', response.data)
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+# A unit test for the login() function.
+
+import unittest
+from flask import session
+from werkzeug.security import generate_password_hash
+import app
+
+class LoginTestCase(unittest.TestCase):
+    def setUp(self):
+        app.app.testing = True
+        self.app = app.app.test_client()
+        # Create a test user in the database
+        self.test_user = {
+            'email': 'test@example.com',
+            'username': 'testuser',
+            'password': generate_password_hash('testpassword')
+        }
+        app.models.insert_user(self.test_user['email'], self.test_user['username'], self.test_user['password'])
+
+    def tearDown(self):
+        # Remove the test user from the database
+        app.models.delete_user(self.test_user['username'])
+
+    def test_successful_login(self):
+        # Test logging in with the correct username and password
+        rv = self.app.post('/login', data={
+            'username': self.test_user['username'],
+            'password': 'testpassword'
+        })
+        # Check that the response is a redirect to the index page
+        self.assertEqual(rv.status_code, 302)
+        self.assertEqual(rv.location, 'http://localhost/')
+
+        # Check that the session is now logged in and the username is set
+        with self.app.session_transaction() as sess:
+            self.assertTrue(sess['logged_in'])
+            self.assertEqual(sess['username'], self.test_user['username'])
+
+    def test_incorrect_password(self):
+        # Test logging in with an incorrect password
+        rv = self.app.post('/login', data={
+            'username': self.test_user['username'],
+            'password': 'wrongpassword'
+        })
+        # Check that the response contains the "Incorrect password" error message
+        self.assertIn(b'Incorrect password', rv.data)
+
+    def test_username_not_found(self):
+        # Test logging in with a username that is not in the database
+        rv = self.app.post('/login', data={
+            'username': 'nonexistentuser',
+            'password': 'testpassword'
+        })
+        # Check that the response contains the "Username or email not found" error message
+        self.assertIn(b'Username or email not found', rv.data)
+
+
+# A unit test for the loggout() function.
+
+def test_logout():
+    with app.test_client() as client:
+        # Log in a user first
+        client.post('/login', data={'username': 'testuser', 'password': 'password'})
+        # Check that user is logged in
+        with client.session_transaction() as sess:
+            assert sess['logged_in'] == True
+        # Log out the user
+        response = client.get('/logout')
+        # Check that user is logged out
+        with client.session_transaction() as sess:
+            assert sess.get('logged_in') == None
+            assert sess.get('username') == None
+        # Check that the response redirects to the home page
+        assert response.status_code == 302
+        assert response.headers['Location'] == 'http://localhost/'
+
+
+# A unit test for the post() function.
+
+import unittest
+from app import app, db
+from models import User
+import base64
+
+class TestPost(unittest.TestCase):
+    
+    def setUp(self):
+        self.app = app.test_client()
+        db.create_all()
+        self.user = User(username='testuser', email='testuser@test.com', password='testpass')
+        db.session.add(self.user)
+        db.session.commit()
+        
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        
+    def test_post(self):
+        with open('test_image.png', 'rb') as f:
+            image_data = f.read()
+        img_b64 = base64.b64encode(image_data).decode('utf-8')
+        
+        with self.app as client:
+            # login
+            client.post('/login', data=dict(
+                username='testuser',
+                password='testpass'
+            ), follow_redirects=True)
+            
+            # post
+            client.post('/post', data=dict(
+                image=img_b64,
+                content='test post'
+            ), content_type='multipart/form-data')
+            
+            # check if the post was created
+            response = client.get('/')
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'test post', response.data)
+
+
+# A unit test for the profile() function. Note: this test assumes that there is an existing user with the username "testuser" in the database and that there is a file named "test_avatar.png" in the same directory as the test script.
+
+def test_profile():
+    with app.test_client() as client:
+        # Test getting a profile page for an existing user
+        response = client.get('/profile/testuser')
+        assert response.status_code == 200
+
+        # Test submitting a POST request to add an avatar image
+        with open('test_avatar.png', 'rb') as f:
+            image_data = io.BytesIO(f.read())
+        response = client.post('/profile/testuser', data={
+            'avatar': (image_data, 'test_avatar.png')
+        }, follow_redirects=True)
+        assert response.status_code == 200
+
+        # Test getting a profile page for a non-existent user
+        response = client.get('/profile/nonexistentuser')
+        assert response.status_code == 404
+
+
+# A unit test for the register() function. 
+
+import unittest
+from app import app, models
+
+class RegisterTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.client = app.test_client()
+        self.username = 'testuser'
+        self.email = 'testuser@test.com'
+        self.password = 'testpassword'
+        self.confirm_password = 'testpassword'
+        self.invalid_username = 'a'
+        self.invalid_email = 'a'
+        self.invalid_password = 'a'
+        models.init_db()
+
+    def tearDown(self):
+        models.db.close()
+
+    def test_register_success(self):
+        response = self.client.post('/register', data=dict(
+            username=self.username,
+            email=self.email,
+            password=self.password,
+            confirm_password=self.confirm_password
+        ), follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Login', response.data)
+
+    def test_register_missing_fields(self):
+        response = self.client.post('/register', data=dict(
+            username='',
+            email='',
+            password='',
+            confirm_password=''
+        ))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Please enter all fields', response.data)
+
+    def test_register_short_fields(self):
+        response = self.client.post('/register', data=dict(
+            username=self.invalid_username,
+            email=self.invalid_email,
+            password=self.invalid_password,
+            confirm_password=self.invalid_password
+        ))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Fields must be at least 3 characters long', response.data)
+
+    def test_register_passwords_not_match(self):
+        response = self.client.post('/register', data=dict(
+            username=self.username,
+            email=self.email,
+            password=self.password,
+            confirm_password=self.confirm_password + 'a'
+        ))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Passwords must match', response.data)
+
+    def test_register_existing_user(self):
+        # Register a user first
+        models.register_user(self.username, self.email, self.password)
+        response = self.client.post('/register', data=dict(
+            username=self.username,
+            email=self.email,
+            password=self.password,
+            confirm_password=self.password
+        ))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Username or Email already exists', response.data)
+
+
+# A unit test for the search() function. 
+
+import unittest
+from app import app
+
+class SearchTestCase(unittest.TestCase):
+    
+    def setUp(self):
+        app.testing = True
+        self.app = app.test_client()
+        
+    def test_search(self):
+        response = self.app.post('/search', data=dict(query='cat'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Search Results for "cat"', response.data)
+        self.assertIn(b'<h2>Cute Cat Pic</h2>', response.data)
+
+
+# A unit test for the downvote_comment() and downvote_post() functions.
+
+import unittest
+from unittest.mock import MagicMock, patch
+
+from myapp import app
+
+class TestDownvote(unittest.TestCase):
+
+    @patch('myapp.models')
+    def test_downvote(self, mock_models):
+        # Set up mock models functions
+        mock_models.get_user.return_value = [{'id': 1, 'username': 'test_user', 'password': 'test_password'}]
+
+        # Set up test client
+        with app.test_client() as client:
+            # Log in user
+            with client.session_transaction() as session:
+                session['username'] = 'test_user'
+            # Test downvote_comment()
+            response = client.post('/downvote_comment', data={'comment_id': 1})
+            self.assertEqual(response.status_code, 200)
+            # Test downvote_post()
+            response = client.post('/downvote_post', data={'post_id': 1})
+            self.assertEqual(response.status_code, 200)
+
+        # Assert that models.downvote_comment() and models.downvote_post() were called with the correct arguments
+        mock_models.downvote_comment.assert_called_with(1, {'id': 1, 'username': 'test_user', 'password': 'test_password'})
+        mock_models.downvote_post.assert_called_with(1, {'id': 1, 'username': 'test_user', 'password': 'test_password'})
+
+
+# A unit test for the upvote_comment() and upvote_post() functions.
+
+def test_upvote():
+    # Create a test client and add a test user to the database
+    with app.test_client() as client:
+        username = "testuser"
+        email = "test@example.com"
+        password = "testpassword"
+        hashed_password = generate_password_hash(password, method='sha256')
+        models.register_user(username, email, hashed_password)
+
+        # Log in the test user
+        client.post('/login', data=dict(
+            username=username,
+            password=password
+        ))
+
+        # Create a test post and comment
+        post_id = models.create_post(username, "Test Post")
+        comment_id = models.create_comment(username, post_id, "Test Comment")
+
+        # Test upvoting a comment
+        response = client.post('/upvote_comment', data=dict(
+            comment_id=comment_id
+        ), follow_redirects=True)
+        assert b'Test Comment' in response.data
+        assert b'1 Upvotes' in response.data
+
+        # Test upvoting a post
+        response = client.post('/upvote_post', data=dict(
+            post_id=post_id
+        ), follow_redirects=True)
+        assert b'Test Post' in response.data
+        assert b'1 Upvotes' in response.data
+
+
