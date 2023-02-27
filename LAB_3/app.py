@@ -4,6 +4,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_wtf.csrf import CSRFProtect
 
+
 app = Flask(__name__)
 
 # @app.route('/')
@@ -62,3 +63,7 @@ csrf = CSRFProtect(app)
 
 if __name__ == '__main__':
     app.run()
+
+
+
+
