@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>DTM Network</title>
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper teal lighten-2">
+            <a href="{{ url_for('controller.index') }}" class="brand-logo">DTM Network</a>
+            <span class="slogan">Connecting students on this Postgraduation</span>
+            <a href="#" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="{{ url_for('controller.feed') }}">Home</a></li>
+                <li><a href="{{ url_for('controller.search') }}">Search</a></li>
+                {% if session.username %}
+                <li><a href="{{ url_for('controller.profile', username=session.username) }}">Welcome, {{ session.username }}</a></li>
+                <li><a href="{{ url_for('controller.logout') }}">Logout</a></li>
+                {% else %}
+                <li><a href="{{ url_for('controller.login') }}">Login</a></li>
+                <li><a href="{{ url_for('controller.register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>    
+
+    <ul class="sidenav" id="mobile-menu">
+        <li><a href="{{ url_for('controller.feed') }}">Home</a></li>
+        <li><a href="{{ url_for('controller.search') }}">Search</a></li>
+        {% if session.username %}
+        <li><a href="{{ url_for('controller.profile', username=session.username) }}">Welcome, {{ session.username }}</a></li>
+        <li><a href="{{ url_for('controller.logout') }}">Logout</a></li>
+        {% else %}
+        <li><a href="{{ url_for('controller.login') }}">Login</a></li>
+        <li><a href="{{ url_for('controller.register') }}">Register</a></li>
+        {% endif %}
+    </ul>
+    
+    <div class="container">
+        {% for message in get_flashed_messages() %}
+        <div class="card-panel red lighten-4">{{ message }}</div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="logo">
+        <img src="static/css/logo.png">
+    </div>
+</body>   
+    
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('.sidenav');
+            var instances = M.Sidenav.init(elems);
+        });
+    </script>
+
+

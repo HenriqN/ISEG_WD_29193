@@ -1,0 +1,72 @@
+{% extends 'index.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1 class="text-center" style="font-size: 40px; color: black;">Search</h1>
+    <form action="{{ url_for('controller.search') }}" method="post">
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        <input type="text" name="query" placeholder="Enter search query..." class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+    {% if posts %}
+      <h2 class="text-center mt-5">Results:</h2>
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          {% for post in posts %}
+            {% for user in users %}
+              {% if user[0] == post[1] %}
+                <div class="card mb-4">
+                  <div class="card-header">
+                    <p class="username">Author: {{ user[1] }}</p>
+                  </div>
+              {% endif %}
+            {% endfor%}  
+              <div class="card-body">
+                <p class="content">{{ post[3] }}</p>
+                <p class="timestamp">{{ post[4] }}</p>
+              </div>
+              <div class="card-footer">
+                <form action="{{ url_for('controller.comment') }}" method="post">
+                  {{ form.hidden_tag() }}
+                  <input type="hidden" name="post_id" value="{{ post[0] }}">
+                  <div class="form-group">
+                    <input type="text" name="content" placeholder="Add a comment..." class="form-control">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Comment</button>
+                </form>
+                {% for comment in comments %}
+                  {% if comment[1] == post[0] %}
+                    {% for user in users %}
+                      {% if user[0] == comment[2] %}
+                        <div class="card mt-3">
+                          <div class="card-header">
+                            <p class="username">{{ user[1] }}</p>
+                          </div>
+                        {% endif %}
+                      {% endfor%}
+                      <div class="card-body">
+                        <p class="comment">{{ comment[3] }}</p>
+                      </div>
+                      <div class="card-footer">
+                        <form action="{{ url_for('controller.upvote_comment') }}" method="post">
+                          {{ form.hidden_tag() }}
+                          <input type="hidden" name="comment_id" value="{{ comment[0] }}">
+                          <button type="submit" class="btn btn-primary">Upvote</button>
+                        </form>
+                        <span class="badge badge-secondary">Upvotes: {{ comment[5] }} upvotes</span>
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+

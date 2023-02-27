@@ -1,0 +1,64 @@
+{% extends 'index.html' %}
+
+{% block content %}
+  <div class="container">
+    <h1>{{ user[1] }}'s Profile</h1>
+    <p>Username: {{ user[1] }}</p>
+    <p>Email: {{ user[2] }}</p>
+    <p>Registration date: {{ user[4] }}</p>
+    <form action="{{ url_for('controller.profile', username=user[1]) }}" method="post" class="mb-5" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+    <img src="data:image/png;base64,{{ user[5] }}" width = "50"></img>    
+    <input type="file" name="avatar"><br>
+    <input type="submit" value="Seleccionar">
+    </form>
+
+    <form action="{{ url_for('controller.delete', username=user[1]) }}" method="post" class="mb-5" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+    <input type="submit" value="Delete">
+    </form>
+
+    <hr>
+
+    <h2>My Feed</h2>
+
+    {% for post in posts %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="post">
+            <!-- <p class="username">Author: {{ post[1] }}</p> -->
+            <p class="timestamp">{{ post[4] }}</p>
+            {% if post[2] != '' %}
+              <p class="content">{{ post[3] }}</p>
+              <img src="data:image/png;base64,{{ post[2] }}" width = "615hv"></img>    
+            {% elif post[2] == '' %}
+              <p class="content">{{ post[3] }}</p>
+            {% endif %}
+            <span class="badge badge-secondary">{{ post[5] }} upvotes</span>
+            <span class="badge badge-secondary">{{ post[6] }} downvotes</span> 
+          </div>
+          <hr>
+          <div class="card-footer"> 
+            </div>
+
+            <!-- Comments -->
+            {% for comment in comments %}
+              {% if comment[1] == post[0]%}
+                {% for user in users %}
+                  {% if user[0] == comment[2] %}
+                    <div class="media mt-3">
+                      <span class="badge badge-secondary">{{ comment[5] }} upvotes</span>  
+                      <span class="badge badge-secondary">{{ comment[6] }} downvotes</span>  
+                      <p class="comment"> <img src="data:image/png;base64,{{ user[5] }}" class="mr-3 rounded-circle" alt="User Avatar" width="30" height="30"> 
+                        <strong>{{ user[1] }}:</strong> {{ comment[3] }}</p>
+                    </div>
+                  {% endif %}
+                {% endfor %}  
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

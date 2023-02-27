@@ -1,0 +1,99 @@
+{% extends 'index.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4" style="font-size: 40px; color: black;">Feed</h1>
+  <p class="text-center mb-5">View and post updates on the DTM Network.</p>
+
+  <!-- Post Form -->
+  <form action="{{ url_for('controller.post') }}" method="post" class="mb-5" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      <textarea class="form-control" rows="3" name="content" placeholder="What's on your mind?"></textarea>
+    </div>
+    <input type="file" name="image"><br>
+    <button type="submit" class="btn btn-primary btn-block">Post</button>
+  </form>
+
+<!-- Posts -->
+{% for post in posts %}
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="post">
+        {% for user in users %}
+          {% if user[0] == post[1] %}
+            <p class="mb-0"> <img src="data:image/png;base64,{{ user[5] }}" class="mr-3 rounded-circle" alt="User Avatar" width="40" height="40">
+              <strong>{{ user[1] }}</strong></p>
+            <p class="text-muted mb-0">{{ post[4] }}</p>
+            <hr>
+            {% if post[2] != '' %}
+            <p>{{ post[3] }}</p>
+            <img src="data:image/png;base64,{{ post[2] }}" width = "615hv"></img>    
+            {% elif post[2] == '' %}
+            <p>{{ post[3] }}</p>
+            {% endif %}    
+          {% endif %}
+        {% endfor %}
+      </div>
+      <hr>
+      <div class="card-footer">
+        <form action="{{ url_for('controller.comment') }}" method="post">
+          {{ form.hidden_tag() }}
+          <input type="hidden" name="post_id" value="{{ post[0] }}">
+          <div class="form-group">
+            <input type="text" name="content" placeholder="Add a comment..." class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+        </form>
+
+        <!-- Upvote Post -->
+        <form action="{{ url_for('controller.upvote_post') }}" method="post" class="d-inline">
+          {{ form.hidden_tag() }}
+          <input type="hidden" name="post_id" value="{{ post[0] }}">
+          <button type="submit" class="btn btn-sm upvote"><i class="fas fa-thumbs-up"></i> {{ post[5] }}</button>
+        </form>
+
+        <!-- Downvote Post -->
+        <form action="{{ url_for('controller.downvote_post') }}" method="post" class="d-inline">
+          {{ form.hidden_tag() }}
+          <input type="hidden" name="post_id" value="{{ post[0] }}">
+          <button type="submit" class="btn btn-sm downvote"><i class="fas fa-thumbs-up"></i> {{ post[6] }}</button>
+        </form>
+
+        <!-- Comments -->
+        {% for comment in comments %}
+          {% if comment[1] == post[0]%}
+            {% for user in users %}
+              {% if user[0] == comment[2] %}
+                <div class="media mt-3">
+                  <div class="media-body">
+                    <p class="mb-0"><img src="data:image/png;base64,{{ user[5] }}" class="mr-3 rounded-circle" alt="User Avatar" width="40" height="40"> 
+                      <strong>{{ user[1] }}</strong> <small class="text-muted">{{ comment[4] }}</small></p>
+                    <p class="mb-0">{{ comment[3] }}</p>
+                    <form action="{{ url_for('controller.upvote_comment') }}" method="post" class="d-inline">
+                      {{ form.hidden_tag() }}
+                      <input type="hidden" name="comment_id" value="{{ comment[0] }}">
+                      <button type="submit" class="btn btn-sm upvote"><i class="fas fa-thumbs-up"></i> {{ comment[5] }}</button>
+                      </form>
+                    <form action="{{ url_for('controller.downvote_comment') }}" method="post" class="d-inline">
+                      {{ form.hidden_tag() }}
+                      <input type="hidden" name="comment_id" value="{{ comment[0] }}">
+                      <button type="submit" class="btn btn-sm downvote"><i class="fas fa-thumbs-up"></i> {{ comment[6] }}</button>
+                    </form>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}    
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+{% endblock %}
+
+
+
+
