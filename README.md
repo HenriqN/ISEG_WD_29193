@@ -16,3 +16,5 @@ This repository has the statements for the SDP course at ISEG. The course planni
 6. Lab06: Authentication, security and other advanced topics
 
 7. Lab07: Test and Deployment
+
+0. Course Project 
